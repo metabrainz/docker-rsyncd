@@ -11,6 +11,20 @@ READ_ONLY=${READ_ONLY:-true}
 COMMENT=${COMMENT:-"docker volume"}
 MAX_CONNECTIONS=${MAX_CONNECTIONS:-20}
 BWLIMIT=${BWLIMIT:-0}
+REVERSE_LOOKUP=${REVERSE_LOOKUP:-yes}
+TRANSFER_LOGGING=${TRANSFER_LOGGING:-no}
+# %a client address, %m module, %o operation (send/recv), %f file,
+# %l file length, %b bytes actually transferred
+LOG_FORMAT=${LOG_FORMAT:-"%t [%p] %a %m %o %f %l %b"}
+
+# ALLOW is a list of addresses/networks. An empty value or "*" means anybody:
+# no "hosts" lines are written, so rsync does no access check at all.
+HOSTS_CONF=""
+if [ -n "${ALLOW}" ] && [ "${ALLOW}" != "*" ]; then
+  HOSTS_CONF="    hosts deny = *
+    hosts allow = ${ALLOW}
+"
+fi
 
 chown "${OWNER}:${GROUP}" "${VOLUME}" || true
 
@@ -24,15 +38,15 @@ max connections = ${MAX_CONNECTIONS}
 strict modes = yes
 ignore errors = no
 ignore nonreadable = yes
-transfer logging = no
+reverse lookup = ${REVERSE_LOOKUP}
+transfer logging = ${TRANSFER_LOGGING}
+log format = ${LOG_FORMAT}
 timeout = 600
 refuse options = checksum
 dont compress = *.gz *.tgz *.zip *.z *.rpm *.deb *.iso *.bz2 *.tbz
 
 [${VOLUME_NAME}]
-    hosts deny = *
-    hosts allow = ${ALLOW}
-    read only = ${READ_ONLY}
+${HOSTS_CONF}    read only = ${READ_ONLY}
     path = ${VOLUME}
     comment = "${COMMENT}"
 
