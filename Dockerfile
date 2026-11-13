@@ -1,4 +1,4 @@
-FROM metabrainz/base-image
+FROM metabrainz/base-image:resolute-1.0.22-v0.1
 MAINTAINER Laurent Monin <zas@metabrainz.org>
 
 RUN apt-get update && \
